@@ -1,0 +1,435 @@
+---
+title: "Rancangan Faktorial 3^2"
+author: "Windi Pangesti"
+output:
+  rmdformats::readthedown:
+    theme: default
+---
+
+# Pendahuluan
+
+**Rancangan faktorial** adalah metode eksperimen yang digunakan untuk mengevaluasi pengaruh dari dua atau lebih faktor secara simultan terhadap variabel respon. Rancangan ini memungkinkan peneliti untuk mempelajari baik efek utama dari masing-masing faktor maupun interaksi antar faktor. Salah satu bentuk rancangan faktorial yang umum digunakan adalah rancangan faktorial 3\^2.
+
+Pada **rancangan faktorial 3\^2**, terdapat **dua faktor** yang masing-masing dipertimbangkan pada **tiga level**. Level ini biasanya disebut dengan level rendah, sedang, dan tinggi.
+
+#### Tujuan
+
+-   Mengidentifikasi Efek Utama: mengetahui pengaruh masing-masing faktor terhadap respons yang diukur.
+
+-   Memahami Interaksi Faktor: menganalisis apakah ada interaksi antara faktor A dan faktor B. Interaksi terjadi jika efek satu faktor tergantung pada level faktor lainnya.
+
+# Ilustrasi
+
+Sebuah eksperimen dilakukan dalam proses kimia. Faktor desainnya adalah suhu dan tekanan. Adapun variabel responsnya adalah hasil (yield). Data yang dihasilkan dari eksperimen ini adalah sebagai berikut.
+
+<center>![](images/clipboard-1873089427.png){width="328"}</center>
+
+Rancangan yang digunakan adalah Rancangan Faktorial 3\^2, yang mana terdapat dua faktor yang diuji dan masing-masing tiga level, yaitu:
+
+-   Suhu (Faktor A) dengan tiga level (80, 90, dan 100)
+
+-   Tekanan (Faktor B) dengan tiga level (100, 120, dan 140).
+
+Jumlah kombinasi percobaan yang dilakukan adalah 3×3=9, dan Karena ulangan (𝑟) dilakukan 2 kali, total percobaan menjadi 9×2=18.
+
+## Persiapan Data
+
+```{r}
+# data
+suhu <- rep(c(80, 90, 100), each = 6)
+tekanan <- rep(rep(c(100, 120, 140), each = 2), 3)
+yield <- c(
+  47.58, 48.77, 64.97, 69.22, 80.92, 72.60,  # suhu 80
+  51.86, 82.43, 88.47, 84.23, 93.95, 88.54,  # suhu 90
+  71.18, 92.77, 96.57, 88.72, 76.58, 83.04   # suhu 100
+)
+
+data <- data.frame(
+  Suhu = factor(suhu),
+  Tekanan = factor(tekanan),
+  Yield = yield
+)
+
+data
+```
+
+# ANOVA
+
+```{r}
+model_anova <- aov(Yield ~ Suhu * Tekanan, data = data)
+summary(model_anova)
+```
+
+## Interpretasi
+
+-   Suhu dan Tekanan masing-masing memiliki pengaruh signifikan terhadap respons yang diukur, karena keduanya memiliki p-value yang lebih kecil dari 0.05.
+-   Interaksi antara Suhu dan Tekanan tidak signifikan, karena p-value lebih besar dari 0.05. Dengan kata lain, perubahan pada suhu dan tekanan tidak saling mempengaruhi dalam menentukan respons.
+
+## Perhitungan ANOVA Manual
+
+<center>![](images/clipboard-3795213584.png){width="453"}</center>
+
+### Faktor Koreksi (FK)
+
+`a=3`, `b=3`, dan `r=3`
+
+$$\small
+FK = \frac{Y_{\dots}^2}{r \times a \times b} = \frac{1382.4^2}{3 \times 3 \times 2} = 106168.32
+$$
+
+------------------------------------------------------------------------
+
+### Derajat Bebas (df)
+
+-   Faktor A: $$\small
+    db_A = 3 - 1 = 2
+    $$
+
+-   Faktor B: $$\small
+    db_B = 3 - 1 = 2
+    $$
+
+-   interaksi antara A dan B: $$\small
+    db_{AB} = (3 - 1) \times (3 - 1) = 4
+    $$
+
+-   Galat (error): $$\small
+    db_{\text{galat}} = 17 - 8 = 9
+    $$
+
+-   Total: $$\small
+    db_{\text{total}} = (3 \times 3 \times 2) - 1 = 17
+    $$
+
+------------------------------------------------------------------------
+
+### Jumlah Kuadrat (JK)
+
+-   Jumlah Kuadrat A (JKA): $$\small
+    JKA = \frac{\sum_{i=1}^{a} Y_{i..}^2}{br} - FK = \frac{384.06^2 + \dots + 508.86^2}{3 \times 2} - 106168.32 = 1503.5
+    $$
+
+-   Jumlah Kuadrat B (JKB): $$\small
+    JKB = \frac{\sum_{i=1}^{b} Y_{i..}^2}{ar} - FK = \frac{394.59^2 + \dots + 495.63^2}{3 \times 2} - 106168.32 = 1096.9
+    $$
+
+-   Jumlah Kuadrat Interaksi AB (JKP): $$\small
+    JKP = \frac{\sum_{i=1}^{a} \sum_{j=1}^{b} Y_{ij.}^2}{r} - FK = \frac{(47.8+48.77)^2 + \dots + (76.58+83.4)^2}{2} - 106168.32 = 3187.13
+    $$
+
+-   Jumlah Kuadrat Interaksi AB (JKAB): $$
+    JKAB = JKP - JKA - JKB = 586.64
+    $$
+
+-   Jumlah Kuadrat Total (JKT): $$\small
+    JKT = \sum_{i=1}^{a} \sum_{j=1}^{b} \sum_{k=1}^{r} Y_{ijk}^2 - FK = \left( 47.58^2 + 48.77^2 + \dots + 83.04^2 \right) - 106168.32 = 4007.10
+    $$
+
+-   Jumlah Kuadrat Galat (JKG): $$\small
+    JKG = JKT - JKA - JKB - JKAB = 819.9769
+    $$
+
+### Kuadrat Tengah
+
+-   Kuadrat Tengah Faktor A: $$\small
+    KTA = \frac{JKA}{db_A} = \frac{1503.5}{2} = 751.78
+    $$
+
+-   Kuadrat Tengah Faktor B: $$\small
+    KTB = \frac{JKB}{db_B} = \frac{1096.9}{2} = 548.47
+    $$
+
+-   Kuadrat Tengah Faktor AB: $$\small
+    KTAB = \frac{JKAB}{db_{AB}} = \frac{586.64}{4} = 146.66
+    $$
+
+-   Kuadrat Tengah Galat: $$\small
+    KTG = \frac{JKG}{db_{\text{Galat}}} = \frac{819.98}{9} = 91.11
+    $$
+
+------------------------------------------------------------------------
+
+### F Hitung
+
+-   F hitung A: $$\small
+    F_{\text{hit A}} = \frac{KTA}{KTG} = \frac{751.78}{91.11} = 8.25
+    $$
+
+-   F hitung B: $$\small
+    F_{\text{hit B}} = \frac{KTB}{KTG} = \frac{548.47}{91.11} = 6.02
+    $$
+
+-   F hitung AB: $$\small
+    F_{\text{hit AB}} = \frac{KTAB}{KTG} = \frac{146.66}{91.11} = 1.61
+    $$
+
+------------------------------------------------------------------------
+
+### TABEL ANOVA
+
+Berikut tabel ANOVA yang dihasilkan dari perhitungan manual:
+
+| Faktor          | DB  | JK      | KT     | F hitung | Ftabel |
+|-----------------|-----|---------|--------|----------|--------|
+| Suhu            | 2   | 1503.50 | 751.78 | 8.25     | 0.0092 |
+| Tekanan         | 2   | 1096.90 | 548.47 | 6.02     | 0.0219 |
+| Suhu \* Tekanan | 4   | 586.64  | 146.66 | 1.61     | 0.2536 |
+| Galat           | 9   | 819.98  | 91.11  |          |        |
+| Total           | 17  | 4007.10 |        |          |        |
+
+# Analisis Lanjut : Pendekatan Kontras
+
+Setelah dilakukan analisis varians (ANOVA) secara keseluruhan, langkah berikutnya adalah menerapkan pendekatan kontras untuk mengevaluasi pengaruh masing-masing faktor secara lebih spesifik.
+
+Penentuan koefisien kontras orthogonal dilakukan berdasarkan tabel diatas, untuk jumlah level (*k*) = 3 dapat dilihat efek secara linear dan kuadratik.
+
+<center>![](images/clipboard-2085233181.png){width="507"}</center>
+
+```{r}
+# Kontras orthogonal: Linear & Quadratik
+kontras <- matrix(c(
+  -1, 0, 1,    # Linear
+   1, -2, 1    # Kuadratik
+), ncol = 2)
+
+# Nama Kolom pada Matriks Kontras
+colnames(kontras) <- c("L", "Q")
+
+#Menetapkan Kontras pada Faktor Suhu dan Tekanan
+contrasts(data$Suhu) <- kontras
+contrasts(data$Tekanan) <- kontras
+```
+
+Berikut penjelasan mengenai `fungsi` yang digunakan :
+
+**`matrix()`**: Fungsi ini membuat matriks `kontras`, yang berisi dua jenis kontras: linier dan kuadratik.
+
+-   Kontras Linier: `-1, 0, 1` digunakan untuk menguji perbedaan linier antara level-level faktor.
+
+-   Kontras Kuadratik: `1, -2, 1` digunakan untuk menguji apakah ada pola kuadratik (seperti kurva U atau terbalik U) dalam respons terhadap level faktor.
+
+**`contrasts(data$Suhu)`**: Menetapkan matriks kontras (linier dan kuadratik) pada faktor Suhu.
+
+**`contrasts(data$Tekanan)`**: Menetapkan matriks kontras (linier dan kuadratik) pada faktor Tekanan.
+
+```{r}
+# Model ANOVA
+model <- aov(Yield ~ Suhu * Tekanan, data = data)
+
+# Melihat ANOVA terpisah Linear dan Kuadratik
+summary.aov(model,
+  split = list(
+    Suhu = list("L" = 1, "Q" = 2),
+    Tekanan = list("L" = 1, "Q" = 2),
+    "Suhu:Tekanan" = list(
+      "L x L" = 1,
+      "L x Q" = 2,
+      "Q x L" = 3,
+      "Q x Q" = 4
+    )
+  )
+)
+```
+
+**`split`**: Argumen `split` memungkinkan kita untuk melihat hasil ANOVA yang terpisah berdasarkan jenis kontras yang telah diterapkan. Dalam hal ini, kita ingin melihat efek dari kontras linier (L) dan kontras kuadratik (Q) untuk masing-masing faktor dan interaksi. `split` digunakan untuk memecah hasil ANOVA berdasarkan kontras-kontras ini.
+
+## Interpretasi
+
+**Pengaruh Suhu Terhadap Yield**:
+
+Suhu berpengaruh signifikan terhadap yield, pada kontras linier. Artinya, peningkatan atau penurunan suhu menyebabkan perubahan yang konsisten pada yield.
+
+**Pengaruh Tekanan Terhadap Yield**:
+
+Tekanan berpengaruh signifikan terhadap yield, pada kontras linier. Artinya, peningkatan atau penurunan tekanan menyebabkan perubahan yang konsisten pada yield.
+
+**Suhu:Tekanan: Linier x Linier**
+
+Interaksi antara perubahan linier pada suhu dan tekanan menunjukkan pengaruh signifikan terhadap yield. Ini berarti bahwa pengaruh suhu terhadap yield dapat berbeda tergantung pada level tekanan, dan sebaliknya. meskipun interaksi non-linier/quadratik tidak signifikan.
+
+------------------------------------------------------------------------
+
+## Perhitungan Manual
+
+### Jumlah Kuadrat (JK)
+
+Berikut adalah perhitungan **Jumlah Kuadrat (JK)** untuk berbagai faktor dan interaksi:
+
+<div>
+
+\- JKA Linear
+
+$$\small
+JK_{A_L} = \frac{[-1(96.35) - 1(134.19) + \dots + 1(159.62)]^2}{2(6)} = \frac{124.8^2}{12} = 1297.92
+$$
+
+**-** JKA Quadratik
+
+$$\small
+JK_{A_Q} = \frac{[1(96.35) + 1(134.19) + \dots + 1(159.62)]^2}{2(18)} = \frac{(-86.04)^2}{36} = 205.6356
+$$
+
+\- JKB Linear
+
+$$\small
+JK_{B_L} = \frac{[-1(96.35) + 0(134.19) + \dots + 1(159.62)]^2}{2(6)} = \frac{101.04^2}{12} = 850.756
+$$
+
+\- JKB Quadratik
+
+$$\small
+JK_{B_Q} = \frac{[1(96.35) - 2(134.19) + \dots + 1(159.62)]^2}{2(18)} = \frac{(-94.14)^2}{36} = 246.176
+$$
+
+**-** JK A Linear - B Linear
+
+$$\small
+JK_{A_L B_L} = \frac{[1(96.35) + 0(134.19) + \dots + 1(159.62)]^2}{2(4)} = \frac{(-61.5)^2}{8} = 472.781
+$$
+
+**-** JK A Linear - B Quadratik
+
+$$\small
+JK_{A_L B_Q} = \frac{[-1(96.35) + 2(134.19) + \dots + 1(159.62)]^2}{2(12)} = \frac{(-28.5)^2}{24} = 33.843
+$$
+
+**-** JK A Quadratik - B Linear
+
+$$\small
+JK_{A_Q B_L} = \frac{[-1(96.35) + 0(134.19) + \dots + 1(159.62)]^2}{2(12)} = \frac{(-43.56)^2}{24} = 79.061
+$$
+
+**-** JK A Quadratik - B Quadratik
+
+$$\small
+JK_{A_Q B_Q} = \frac{[1(96.35) - 2(134.19) + \dots + 1(159.62)]^2}{2(36)} = \frac{(-8.28)^2}{72} = 0.952
+$$
+
+\- JK Total
+
+$$\small
+JK_{\text{Total}} = 4007.104
+$$
+
+**-** JK Galat:
+
+$$\small
+JK_{\text{Galat}} = 4007.104 - 1297.92 - 205.635 - 850.756 - 246.176 - 472.781 - 33.843 - 79.061 - 0.952 = 819.98
+$$
+
+</div>
+
+------------------------------------------------------------------------
+
+### Derajat Bebas
+
+$$\small
+db_{A_L} = db_{A_Q} = db_{B_L} = db_{B_Q} = db_{A_L B_L} = db_{A_L B_Q} = db_{A_Q B_L} = db_{A_Q B_Q} = 1
+$$
+
+-   Derajat bebas untuk **Galat** dihitung sebagai: $$\small
+    db_{\text{Galat}} = 17 - 8 = 9
+    $$
+
+-   Derajat bebas **Total** adalah: $$\small
+    db_{\text{Total}} = 18 - 1 = 17
+    $$
+
+    ------------------------------------------------------------------------
+
+### Kuadrat Tengah (Mean Square):
+
+Kuadrat Tengah dihitung dengan membagi Jumlah Kuadrat (JK) dengan Derajat Bebas (DB).
+
+-   KTA_L: $$\small
+    KTA_L = \frac{JK_{A_L}}{db_{A_L}} = \frac{1297.92}{1} = 1297.92
+    $$
+-   KTA_Q: $$\small
+    KTA_Q = \frac{JK_{A_Q}}{db_{A_Q}} = \frac{205.635}{1} = 205.635
+    $$
+-   KTB_L: $$\small
+    KTB_L = \frac{JK_{B_L}}{db_{B_L}} = \frac{850.756}{1} = 850.756
+    $$
+-   KTB_Q: $$\small
+    KTB_Q = \frac{JK_{B_Q}}{db_{B_Q}} = \frac{246.176}{1} = 246.176
+    $$
+-   KTA_L B_L: $$\small
+    KTA_L B_L = \frac{JK_{A_L B_L}}{db_{A_L B_L}} = \frac{472.781}{1} = 472.781
+    $$
+-   KTA_L B_Q: $$\small
+    KTA_L B_Q = \frac{JK_{A_L B_Q}}{db_{A_L B_Q}} = \frac{33.843}{1} = 33.843
+    $$
+-   KTA_Q B_L: $$\small
+    KTA_Q B_L = \frac{JK_{A_Q B_L}}{db_{A_Q B_L}} = \frac{79.061}{1} = 79.061
+    $$
+-   KTA_Q B_Q: $$\small
+    KTA_Q B_Q = \frac{JK_{A_Q B_Q}}{db_{A_Q B_Q}} = \frac{0.952}{1} = 0.952
+    $$
+-   KTG (Kuadrat Tengah Galat): $$\small
+    KTG = \frac{JK_{\text{Galat}}}{db_{\text{Galat}}} = \frac{819.98}{9} = 91.108
+    $$
+
+------------------------------------------------------------------------
+
+### F hitung:
+
+Berikut adalah perhitungan **F hitung** untuk setiap faktor dan interaksi:
+
+-   F hitung A_L: $$\small
+    F_{\text{hit A_L}} = \frac{KTA_L}{KTG} = \frac{1297.92}{91.108} = 14.245
+    $$
+
+-   F hitung A_Q: $$\small
+    F_{\text{hit A_Q}} = \frac{KTA_Q}{KTG} = \frac{205.635}{91.108} = 2.257
+    $$
+
+-   F hitung B_L: $$\small
+    F_{\text{hit B_L}} = \frac{KTB_L}{KTG} = \frac{850.756}{91.108} = 9.337
+    $$
+
+-   F hitung B_Q: $$\small
+    F_{\text{hit B_Q}} = \frac{KTB_Q}{KTG} = \frac{246.176}{91.108} = 2.701
+    $$
+
+-   F hitung A_L B_L: $$\small
+    F_{\text{hit A_L B_L}} = \frac{KTA_L B_L}{KTG} = \frac{472.781}{91.108} = 5.189
+    $$
+
+-   F hitung A_L B_Q: $$\small
+    F_{\text{hit A_L B_Q}} = \frac{KTA_L B_Q}{KTG} = \frac{33.843}{91.108} = 0.371
+    $$
+
+-   F hitung A_Q B_L: $$\small
+    F_{\text{hit A_Q B_L}} = \frac{KTA_Q B_L}{KTG} = \frac{79.061}{91.108} = 0.867
+    $$
+
+-   F hitung A_Q B_Q: $$\small
+    F_{\text{hit A_Q B_Q}} = \frac{KTA_Q B_Q}{KTG} = \frac{0.952}{91.108} = 0.0104
+    $$
+
+    ------------------------------------------------------------------------
+
+### F tabel:
+
+F tabel dihitung dengan rumus distribusi F untuk derajat bebas faktor dan galat. Dalam hal ini, `α = 0.05`, `db_faktor = 1`, dan `db_galat = 9:`
+
+$$\small
+F_{\text{tabel}} = F(0.05, 1, 9) = 5.117
+$$
+
+------------------------------------------------------------------------
+
+### ANOVA Kontras
+
+| Faktor  | SK  | db  | JK       | KT      | Fhitung | Keterangan |
+|---------|-----|-----|----------|---------|---------|------------|
+| A_L     | 1   | 1   | 1297.92  | 1297.92 | 14.246  | Signifikan |
+| A_Q     | 1   | 1   | 205.635  | 205.635 | 2.257   | Tidak      |
+| B_L     | 1   | 1   | 850.756  | 850.756 | 9.338   | Signifikan |
+| B_Q     | 1   | 1   | 246.176  | 246.176 | 2.702   | Tidak      |
+| A_L B_L | 1   | 1   | 472.781  | 472.781 | 5.189   | Signifikan |
+| A_L B_Q | 1   | 1   | 33.8437  | 33.8437 | 0.371   | Tidak      |
+| A_Q B_L | 1   | 1   | 79.061   | 79.061  | 0.868   | Tidak      |
+| A_Q B_Q | 1   | 1   | 0.952    | 0.952   | 0.010   | Tidak      |
+| Galat   | 9   | 9   | 819.980  | 91.109  |         |            |
+| Total   | 17  | 17  | 4007.107 |         |         |            |
